@@ -17,14 +17,14 @@ class Stats:
         self.solution_cost = 0
         self.solution_depth = 0
 
-def a_star(problem, initial_state):
+def a_star(problem, initial_state, heuristic="h0"):
     stats = Stats()
 
-    h0 = problem.Heuristic(initial_state)
+    h0 = problem.Heuristic(heuristic, initial_state)
     start_node = Node(initial_state, None, None, g=0, f=h0)
 
     frontier = []
-    heapq.heappush(frontier, start_node)
+    heapq.heappush(frontier, (start_node.f, id(start_node), start_node))
     frontier_dict = {initial_state: start_node}
 
     best_g = {initial_state: 0}
@@ -32,8 +32,13 @@ def a_star(problem, initial_state):
     while frontier:
         stats.max_frontier = max(stats.max_frontier, len(frontier))
 
-        n = heapq.heappop(frontier)
-        del frontier_dict[n.state]
+        current_f, _, n = heapq.heappop(frontier)
+
+        if n.state in frontier_dict:
+            if frontier_dict[n.state] != n:
+                continue
+            del frontier_dict[n.state]
+
         stats.nodes_expanded += 1
 
         if problem.GoalTest(n.state):
@@ -48,7 +53,7 @@ def a_star(problem, initial_state):
 
             if s_prime not in best_g or g_prime < best_g[s_prime]:
                 best_g[s_prime] = g_prime
-                f_prime = g_prime + problem.Heuristic(s_prime)
+                f_prime = g_prime + problem.Heuristic(heuristic, s_prime)
                 s_node = Node(s_prime, n, action, g_prime, f_prime)
 
                 if s_prime in frontier_dict:

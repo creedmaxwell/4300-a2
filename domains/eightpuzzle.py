@@ -2,7 +2,7 @@ class Puzzle:
     def __init__(self):
         self.goal_state = ((1,2,3),
                            (4,5,6),
-                           (7,8,9))
+                           (7,8,0))
         
     def InitialState(self):
         return ((7,2,4),
@@ -61,9 +61,16 @@ class Puzzle:
 
     def StepCost(self, state, action, next_state):
         return 1
-
-    def Heuristic(self, state):
-        #manhattan distance
+    
+    def MisplacedTiles(self, state):
+        count = 0
+        for i in range(3):
+            for j in range(3):
+                if state[i][j] != 0 and state[i][j] != self.goal_state[i][j]:
+                    count +=1
+        return count
+    
+    def ManhattanDistance(self, state):
         distance = 0
         goal_positions = {}
         for i in range(3):
@@ -78,3 +85,14 @@ class Puzzle:
                     distance += abs(i - goal_i) + abs(j- goal_j)
         
         return distance
+
+    def Heuristic(self, heuristic, state):
+        if heuristic == "h0":
+            return 0
+            # UCS baseline
+        if heuristic == "h1":
+            return self.MisplacedTiles(state)
+        if heuristic == "h2":
+            return self.ManhattanDistance(state)
+
+    
